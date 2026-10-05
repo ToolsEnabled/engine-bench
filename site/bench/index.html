@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Engine Bench 0.1: two AI agents build the same engine</title>
+<meta name="description" content="Pick any two AI models and watch them build a real 1990s 1.6 L inline-four from one prompt and the same CAD tools. Download and verify the results. Bring your own keys.">
+<link rel="icon" href="/brand-icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#09090a">
+<meta property="og:title" content="Engine Bench 0.1">
+<meta property="og:description" content="Two AI agents. One engine. One prompt, no hand-holding.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://toolsenabled.ai/bench/">
+<meta property="og:image" content="https://toolsenabled.ai/static/bench/og-bench.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://toolsenabled.ai/bench/">
+<link rel="preload" href="/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/site.css">
+<link rel="stylesheet" href="/static/bench/bench.css">
+<script src="/static/bench/theme.js"></script>
+</head>
+<body class="bench">
+<a class="skip" href="#setup">Skip to setup</a>
+
+<header class="top" id="top"><div class="wrap">
+  <a class="brand" href="/"><img src="/brand-icon.svg" alt="" width="30" height="30">ToolsEnabled</a>
+  <nav aria-label="Main">
+    <a href="/">Fleet</a>
+    <a href="/bench/" aria-current="page">Engine Bench</a>
+    <a href="#rules">Rules</a>
+    <div class="themes" role="group" aria-label="Colour theme">
+      <button type="button" data-theme-set="dark" aria-pressed="true"><i class="sw sw-red"></i>Red</button>
+      <button type="button" data-theme-set="light" aria-pressed="false"><i class="sw sw-white"></i>White</button>
+    </div>
+  </nav>
+</div></header>
+
+<main>
+<section class="b-hero">
+  <div class="wrap b-hero-grid">
+    <div class="copy">
+      <span class="eyebrow"><i></i><span data-bench>Engine Bench 0.1</span> · any model, your keys</span>
+      <h1>Two agents.<br>One <span class="r">engine.</span></h1>
+      <p class="lead">Pick any two AI models. They get one prompt, the same specs and the same CAD tools, then build a real 1990s 1.6 L inline-four side by side while you watch. No hand-holding. The goal is our 894-part reference engine.</p>
+      <div class="cta">
+        <a class="btn primary" href="#setup">Set up a race
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
+        <a class="btn ghost" href="#rules">How it stays fair</a>
+      </div>
+      <div class="facts"><span>One prompt</span><span>Same 6 tools</span><span>Any provider</span><span>Scored against the real engine</span></div>
+    </div>
+    <figure class="goal-card">
+      <canvas id="goal-canvas" role="img" aria-label="The goal: our reference engine, 894 separate parts, turning slowly"></canvas>
+      <div class="loading" id="goal-loading">Loading the goal engine <span>0%</span></div>
+      <figcaption><b>The goal</b><span>894 separate parts · 1.6 L SOHC inline-four · 16 valves</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="b-setup" id="setup"><div class="wrap">
+  <p class="kicker">Set up</p>
+  <h2>Pick the two agents.</h2>
+  <p class="sub">Any two models from 15 providers. Each run is billed to your own account.</p>
+
+  <div class="agents">
+    <fieldset class="agent-card" data-agent="A">
+      <legend><span class="tag">A</span>Agent A</legend>
+      <label>Provider <select name="provider"></select></label>
+      <label>Model <input name="model" list="models-A" spellcheck="false" autocomplete="off" placeholder="Pick or type a model ID"></label>
+      <datalist id="models-A"></datalist>
+      <p class="model-note"></p>
+      <details class="price"><summary>Cost <span></span></summary>
+        <div class="price-grid">
+          <label>Input <input name="input" inputmode="decimal"></label>
+          <label>Output <input name="output" inputmode="decimal"></label>
+          <label>Cached input <input name="cacheRead" inputmode="decimal"></label>
+          <label>Cache write <input name="cacheWrite" inputmode="decimal"></label>
+        </div>
+        <p class="note">US dollars per million tokens. A reported provider charge takes priority. Listed prices are from 5 October 2026. You can edit them.</p>
+      </details>
+    </fieldset>
+    <div class="vs" aria-hidden="true">VS</div>
+    <fieldset class="agent-card" data-agent="B">
+      <legend><span class="tag">B</span>Agent B</legend>
+      <label>Provider <select name="provider"></select></label>
+      <label>Model <input name="model" list="models-B" spellcheck="false" autocomplete="off" placeholder="Pick or type a model ID"></label>
+      <datalist id="models-B"></datalist>
+      <p class="model-note"></p>
+      <details class="price"><summary>Cost <span></span></summary>
+        <div class="price-grid">
+          <label>Input <input name="input" inputmode="decimal"></label>
+          <label>Output <input name="output" inputmode="decimal"></label>
+          <label>Cached input <input name="cacheRead" inputmode="decimal"></label>
+          <label>Cache write <input name="cacheWrite" inputmode="decimal"></label>
+        </div>
+        <p class="note">US dollars per million tokens. A reported provider charge takes priority. Listed prices are from 5 October 2026. You can edit them.</p>
+      </details>
+    </fieldset>
+  </div>
+
+  <div class="keys">
+    <h3>Your API keys</h3>
+    <p class="note" id="one-key" hidden>One key runs both sides when they use the same provider.</p>
+    <div class="key-row" id="key-fields"></div>
+    <div class="key-opts">
+      <label class="check"><input type="checkbox" id="remember"> Remember my keys on this device</label>
+      <button type="button" class="link" id="forget">Forget my keys</button>
+    </div>
+    <p class="note">Your keys stay in this browser. Your browser sends each key straight to its own provider, and to nowhere else. This page's security policy only lets it connect to the providers listed here. ToolsEnabled never sees your keys. For extra safety, use a key with a spending limit.</p>
+  </div>
+
+  <div class="limits">
+    <label>Reasoning effort <select id="effort"><option value="" selected>Model default</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="xhigh">Extra high</option></select></label>
+    <p class="note">One prompt, then each agent works until it says it is done. Time, tokens and cost are measured, not capped. Effort is passed on where the provider supports it.</p>
+  </div>
+
+  <div class="go">
+    <button type="button" class="btn primary" id="start">Start the race</button>
+    <span class="fp">Prompt fingerprint <code id="fp">…</code></span>
+    <p class="msg" id="start-msg" role="alert"></p>
+  </div>
+</div></section>
+
+<section class="b-arena" id="arena" hidden>
+  <div class="wrap wide">
+    <div class="arena-head">
+      <p class="kicker">Live</p>
+      <div class="clock" id="clock">0:00</div>
+      <button type="button" class="btn ghost small" id="stop">Stop both</button>
+    </div>
+    <div class="panes">
+      <article class="pane" data-agent="A">
+        <header><div class="who"><span class="tag">A</span><b class="model">Agent A</b><span class="prov"></span></div><span class="state">Waiting</span></header>
+        <div class="view"><canvas></canvas>
+          <div class="view-tools"><button type="button" data-ghost aria-pressed="true">Goal overlay</button><button type="button" data-fit>Reset view</button></div>
+          <div class="match"><b>0</b><span>% match</span></div></div>
+        <dl class="stats">
+          <div><dt>Time</dt><dd data-s="time">0:00</dd></div>
+          <div><dt>Tokens in / out</dt><dd data-s="tokens">0 / 0</dd></div>
+          <div><dt>Cost</dt><dd data-s="cost">$0.00</dd></div>
+          <div><dt>Turns</dt><dd data-s="turns">0</dd></div>
+          <div><dt>Parts</dt><dd data-s="parts">0</dd></div>
+        </dl>
+        <ol class="feed" aria-live="polite" aria-label="What agent A is doing"></ol>
+      </article>
+      <article class="pane" data-agent="B">
+        <header><div class="who"><span class="tag">B</span><b class="model">Agent B</b><span class="prov"></span></div><span class="state">Waiting</span></header>
+        <div class="view"><canvas></canvas>
+          <div class="view-tools"><button type="button" data-ghost aria-pressed="true">Goal overlay</button><button type="button" data-fit>Reset view</button></div>
+          <div class="match"><b>0</b><span>% match</span></div></div>
+        <dl class="stats">
+          <div><dt>Time</dt><dd data-s="time">0:00</dd></div>
+          <div><dt>Tokens in / out</dt><dd data-s="tokens">0 / 0</dd></div>
+          <div><dt>Cost</dt><dd data-s="cost">$0.00</dd></div>
+          <div><dt>Turns</dt><dd data-s="turns">0</dd></div>
+          <div><dt>Parts</dt><dd data-s="parts">0</dd></div>
+        </dl>
+        <ol class="feed" aria-live="polite" aria-label="What agent B is doing"></ol>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="b-results" id="results" hidden><div class="wrap">
+  <p class="kicker">Result</p>
+  <h2 id="verdict"></h2>
+  <p class="msg" id="result-verification" role="status"></p>
+  <div class="breakdown" id="breakdown"></div>
+  <div class="export">
+    <div class="card-preview"><canvas id="card" aria-label="Share card preview"></canvas></div>
+    <div class="export-side">
+      <h3>Post it on X</h3>
+      <p class="sub">Download the card or a 15-second timelapse, copy the text, and attach the file in X.</p>
+      <div class="export-actions">
+        <button type="button" class="btn primary" data-export="card169">Image, 16:9</button>
+        <button type="button" class="btn ghost" data-export="card45">Image, 4:5</button>
+        <button type="button" class="btn ghost" data-export="clip">Timelapse video</button>
+        <button type="button" class="btn ghost" data-export="grid169">Model grid, 16:9</button>
+        <button type="button" class="btn ghost" data-export="grid45">Model grid, 4:5</button>
+        <button type="button" class="btn ghost" data-export="records">Download run records</button>
+      </div>
+      <label class="post-label" for="post">Post text</label>
+      <textarea id="post" rows="8" spellcheck="true"></textarea>
+      <div class="export-actions">
+        <button type="button" class="btn ghost small" data-export="copy">Copy text</button>
+        <a class="btn ghost small" id="x-intent" href="https://x.com/" target="_blank" rel="noopener">Open X with this text</a>
+      </div>
+      <p class="msg" id="export-msg" role="status"></p>
+    </div>
+  </div>
+</div></section>
+
+<section class="b-leaderboard" id="leaderboard"><div class="wrap">
+  <p class="kicker">Leaderboard</p>
+  <h2 data-bench>Engine Bench 0.1</h2>
+  <p class="sub">Match score vs the real 894-part engine. One prompt. Same tools. Each entry links to a checked run record.</p>
+  <div class="breakdown" id="leaderboard-table" role="region" aria-label="Ranked model runs">Loading the leaderboard…</div>
+  <div class="card-preview board-chart"><canvas id="leaderboard-chart" role="img" aria-label="Model match scores as horizontal bars. Scripted baselines are dashed markers."></canvas></div>
+  <div class="export-actions">
+    <button type="button" class="btn ghost" data-leader-export="chart">Leaderboard image</button>
+    <button type="button" class="btn ghost" data-leader-export="grid169" disabled>Model grid, 16:9</button>
+    <button type="button" class="btn ghost" data-leader-export="grid45" disabled>Model grid, 4:5</button>
+  </div>
+  <p class="msg" id="leaderboard-msg" role="status"></p>
+  <p class="note">Run a race and <a href="https://github.com/ToolsEnabled/engine-bench/issues/new?template=run-record.yml" target="_blank" rel="noopener">send your run record</a> to add a result.</p>
+  <div class="calibration"><h3>Calibration</h3><p class="note">Scripted models. No AI. These help explain the score and are never ranked.</p><ul id="calibration"></ul></div>
+  <div class="record-check">
+    <label for="check-record">Check a run record <input type="file" id="check-record" accept=".json,application/json"></label>
+    <p class="note">Choose one record or a race file. The page replays its tool calls and scores the model. No model is called.</p>
+    <p class="msg" id="verify-msg" role="status" aria-live="polite"></p>
+  </div>
+</div></section>
+
+<section class="solid b-rules" id="rules"><div class="wrap">
+  <p class="kicker"><span data-bench>Engine Bench 0.1</span> · the rules</p>
+  <h2><span data-bench>Engine Bench 0.1</span> rules.</h2>
+  <p class="sub">The only thing that differs between the two sides is the model.</p>
+  <div class="grid">
+    <div class="card"><h3>Same prompt</h3><p>Both agents get the same system prompt and the same spec pack: bore, stroke, layout, and the size and place of every major part.</p></div>
+    <div class="card"><h3>Same tools</h3><p>Six tools with the same names, wording and schemas: add parts, remove parts, list parts, render a view, see the goal, finish.</p></div>
+    <div class="card"><h3>No budget, no hand-holding</h3><p>Each agent gets the prompt once and works until it calls finish. Time, tokens and cost are measured, never capped. Both start at the same moment, in separate workspaces.</p></div>
+    <div class="card"><h3>Same pictures</h3><p>Every render is 800 × 600 from the same cameras, light and colours. Goal renders are made once and given to both.</p></div>
+    <div class="card"><h3>Scored the same</h3><p>Against the real engine: 25% silhouette, 20% surface match, 35% key dimensions and 20% coverage of 18 named parts. The goal itself scores 100.</p></div>
+    <div class="card"><h3>One run, easy to check</h3><p>Download the tool calls and score as a run record. Anyone can replay them here. A safety stop at 150 turns or 90 minutes guards against a runaway loop.</p></div>
+  </div>
+  <div class="docs">
+    <p class="open-note">Everything is open: the page, the prompt, the tools, the scoring code and the full 894-part goal model are <a href="https://github.com/ToolsEnabled/engine-bench">on GitHub</a>. Read the <a href="https://github.com/ToolsEnabled/engine-bench/blob/main/METHOD.md">method</a>.</p>
+    <p class="open-note">Read the <a href="https://github.com/ToolsEnabled/engine-bench/blob/main/METHOD.md">method and versioning promise</a>. A change to the prompt, tools, scoring or goal makes a new version.</p>
+    <details><summary>Read the exact prompt and spec pack</summary><pre id="prompt-text"></pre></details>
+    <details><summary>Read the six tools</summary><pre id="tools-text"></pre></details>
+    <details><summary>How the score works</summary>
+      <p>The score runs from 0 to 100, measured against the reference engine.</p>
+      <ul>
+        <li><b>Silhouette, 25%.</b> Both models are drawn from the timing end, the exhaust side and the top, on the same 256 × 256 grid. The score is the average overlap: shared pixels divided by all covered pixels.</li>
+        <li><b>Surface, 20%.</b> From all six sides, the share of covered pixels where the agent's surface lies within 10 mm of the real engine's surface. A box where the real engine has ribs, covers and pipes scores low here.</li>
+        <li><b>Key dimensions, 35%.</b> Six checks, each full marks when exact and zero at the tolerance: cylinder count; bore (±20%); bore spacing (±20%); crankshaft height (±20%); valve count; overall size (±30%). The checks read the parts the agent tagged with a role.</li>
+        <li><b>Coverage, 20%.</b> The share of the 18 roles that have at least one part: block, head, crankshaft, pistons, rods, camshaft, intake and exhaust valves, spark plugs, oil pan, valve cover, intake and exhaust manifolds, flywheel, timing belt, water pump, distributor and fuel rail.</li>
+      </ul>
+    </details>
+    <details><summary>Your keys and your data</summary>
+      <p>The bench runs in your browser. Each key goes only to its own provider, over HTTPS. Keys stay in memory unless you tick "Remember my keys". Saved keys stay in this browser until you click "Forget my keys". Each provider's terms and data policies apply. Run records contain no keys, model prose or reasoning. ToolsEnabled receives nothing from a run.</p>
+      <p>The page's security policy lets it connect only to: api.anthropic.com, api.openai.com, openrouter.ai, generativelanguage.googleapis.com, api.x.ai, api.mistral.ai, api.deepseek.com, api.groq.com, api.together.xyz, api.fireworks.ai, api.cerebras.ai, api.moonshot.ai, dashscope-intl.aliyuncs.com, api.cohere.ai and router.huggingface.co.</p>
+    </details>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="row">
+    <a href="/">ToolsEnabled Fleet</a>
+    <a href="https://github.com/ToolsEnabled/engine-bench"><span data-bench>Engine Bench 0.1</span> on GitHub</a>
+    <a href="/privacy/">Privacy</a>
+    <a href="/terms/">Terms</a>
+    <a href="mailto:support@toolsenabled.ai">support@toolsenabled.ai</a>
+  </div>
+  <p>© 2026 ToolsEnabled, Inc. <span data-bench>Engine Bench 0.1</span> is an independent project. It is not affiliated with or endorsed by any AI provider. Model names belong to their owners. Results come from a single run with the visitor's own keys.</p>
+</div></footer>
+
+<script type="module" src="/static/bench/js/main.js"></script>
+</body>
+</html>

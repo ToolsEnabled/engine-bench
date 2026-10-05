@@ -1,0 +1,55 @@
+// Headless check of the bench page: loads it under the production CSP, runs a scripted race,
+// switches theme, exports, and saves screenshots. Usage: node tools/check.cjs <out-dir> [phase]
+const { chromium } = require(process.env.PLAYWRIGHT_CORE || 'playwright-core');
+const fs = require('fs'), path = require('path');
+const out = process.argv[2], phase = process.argv[3] || 'all', BASE = process.env.BASE || 'http://127.0.0.1:8793';
+(async () => {
+  fs.mkdirSync(out, { recursive: true });
+  const b = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome', headless: true, args: ['--use-angle=vulkan', '--enable-gpu', '--ignore-gpu-blocklist'] });
+  const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, acceptDownloads: true, colorScheme: 'dark' });
+  await ctx.route('**/*', r => r.request().url().startsWith(BASE) ? r.continue() : r.abort());
+  const p = await ctx.newPage();
+  const log = [];
+  p.on('pageerror', e => log.push('PAGEERROR ' + e + '\n' + (e.stack||'').split('\n').slice(0,4).join('\n')));
+  p.on('console', m => { if (m.type() === 'error' || m.type() === 'warning' || m.text().includes('self-score')) log.push(m.type() + ' ' + m.text()); });
+  await p.addInitScript(() => document.addEventListener('securitypolicyviolation', e => console.error('CSP violation', e.violatedDirective, e.blockedURI)));
+  const t0 = Date.now();
+  await p.goto(BASE + '/bench/?dev=mock');
+  await p.waitForFunction(() => !document.querySelector('#goal-loading'), null, { timeout: 120000 });
+  console.log('goal loaded in', Date.now() - t0, 'ms');
+  await p.waitForTimeout(1500);
+  await p.screenshot({ path: path.join(out, '01-hero-dark.png') });
+  if (phase === 'hero') { console.log(log.join('\n')); await b.close(); return; }
+  await p.locator('#setup').scrollIntoViewIfNeeded();
+  await p.screenshot({ path: path.join(out, '02-setup-dark.png'), fullPage: false });
+  await p.click('#start');
+  await p.waitForTimeout(6000);
+  await p.screenshot({ path: path.join(out, '03-arena-live.png') });
+  await p.waitForSelector('#results:not([hidden])', { timeout: 180000 });
+  await p.waitForTimeout(2500);
+  await p.locator('#arena').scrollIntoViewIfNeeded();
+  await p.screenshot({ path: path.join(out, '04-arena-done.png') });
+  await p.locator('#results').scrollIntoViewIfNeeded();
+  await p.waitForTimeout(800);
+  await p.screenshot({ path: path.join(out, '05-results.png') });
+  console.log('verdict:', await p.textContent('#verdict'));
+  console.log('post:\n' + await p.inputValue('#post'));
+  const save = async (sel, name) => { const [d] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click(sel)]); const f = path.join(out, name + path.extname(d.suggestedFilename())); await d.saveAs(f); console.log(name, d.suggestedFilename(), fs.statSync(f).size, 'bytes'); };
+  await save('[data-export=card169]', 'card-169');
+  await save('[data-export=card45]', 'card-45');
+  if (phase === 'all') await save('[data-export=clip]', 'clip');
+  await p.click('[data-theme-set=light]');
+  await p.waitForTimeout(800);
+  await p.locator('#arena').scrollIntoViewIfNeeded();
+  await p.screenshot({ path: path.join(out, '06-arena-light.png') });
+  await p.evaluate(() => scrollTo(0, 0));
+  await p.waitForTimeout(800);
+  await p.screenshot({ path: path.join(out, '07-hero-light.png') });
+  await p.setViewportSize({ width: 390, height: 844 });
+  await p.waitForTimeout(800);
+  await p.screenshot({ path: path.join(out, '08-mobile-light.png') });
+  await p.locator('#arena').scrollIntoViewIfNeeded();
+  await p.screenshot({ path: path.join(out, '09-mobile-arena.png') });
+  console.log(log.join('\n') || 'no console errors');
+  await b.close();
+})().catch(e => { console.error('CHECK FAILED', e); process.exit(1); });

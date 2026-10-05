@@ -1,0 +1,58 @@
+// Full headless check of the 0.1 page: scripted race, every export, record download and replay check,
+// leaderboard and its image, both themes and phone width. Usage: node tools/check-01.cjs <out-dir> [base-url]
+const { chromium } = require(process.env.PLAYWRIGHT_CORE || 'playwright-core');
+const fs = require('fs'), path = require('path');
+const out = process.argv[2], BASE = process.argv[3] || 'http://127.0.0.1:8793';
+(async () => {
+  fs.mkdirSync(out, { recursive: true });
+  const b = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome', headless: true, args: ['--use-angle=vulkan', '--enable-gpu', '--ignore-gpu-blocklist'] });
+  const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true, colorScheme: 'dark' });
+  await ctx.route('**/*', r => r.request().url().startsWith(BASE) ? r.continue() : r.abort());
+  const p = await ctx.newPage();
+  const log = [];
+  p.on('pageerror', e => log.push('PAGEERROR ' + e.message));
+  p.on('console', m => { if (m.type() === 'error') log.push('console ' + m.text().slice(0, 200)); });
+  await p.addInitScript(() => document.addEventListener('securitypolicyviolation', e => console.error('CSP violation', e.violatedDirective, e.blockedURI)));
+  const shot = async (name, sel) => { if (sel) await p.locator(sel).scrollIntoViewIfNeeded(); await p.waitForTimeout(900); await p.screenshot({ path: path.join(out, name + '.png') }); };
+  const save = async (sel, name) => {
+    const [d] = await Promise.all([p.waitForEvent('download', { timeout: 90000 }), p.click(sel)]);
+    const f = path.join(out, name + path.extname(d.suggestedFilename())); await d.saveAs(f);
+    console.log('export', name, d.suggestedFilename(), fs.statSync(f).size, 'bytes'); return f;
+  };
+  await p.goto(BASE + '/bench/?dev=mock');
+  await p.waitForFunction(() => !document.querySelector('#goal-loading'), null, { timeout: 90000 });
+  console.log('fingerprint', await p.textContent('#fp'));
+  await shot('01-hero');
+  await shot('02-leaderboard', '#leaderboard');
+  console.log('leaderboard:', (await p.textContent('#leaderboard-table')).replace(/\s+/g, ' ').slice(0, 220));
+  console.log('calibration:', (await p.textContent('#calibration')).replace(/\s+/g, ' ').slice(0, 220));
+  await save('[data-leader-export=chart]', 'x-leaderboard');
+  await p.locator('#setup').scrollIntoViewIfNeeded();
+  await p.click('#start');
+  await p.waitForTimeout(5000);
+  await shot('03-arena-live', '#arena');
+  await p.waitForSelector('#results:not([hidden])', { timeout: 240000 });
+  await shot('04-arena-done', '#arena');
+  await shot('05-results', '#results');
+  console.log('verdict:', await p.textContent('#verdict'));
+  console.log('post:\n' + await p.inputValue('#post'));
+  await save('[data-export=card169]', 'x-versus-169');
+  await save('[data-export=card45]', 'x-versus-45');
+  await save('[data-export=grid169]', 'x-grid-169');
+  await save('[data-export=grid45]', 'x-grid-45');
+  const rec = await save('[data-export=records]', 'race-records');
+  if (process.env.CLIP) await save('[data-export=clip]', 'x-timelapse');
+  await p.locator('#leaderboard').scrollIntoViewIfNeeded();
+  await p.setInputFiles('#check-record', rec);
+  await p.waitForFunction(() => /Verified|differs|Calibration|not|cannot|error/i.test(document.querySelector('#verify-msg').textContent), null, { timeout: 120000 });
+  console.log('replay check:', await p.textContent('#verify-msg'));
+  await p.waitForSelector('#results:not([hidden])', { timeout: 60000 });
+  await shot('06-replayed', '#arena');
+  await p.click('[data-theme-set=light]');
+  await shot('07-leaderboard-light', '#leaderboard');
+  await shot('08-results-light', '#results');
+  await p.setViewportSize({ width: 390, height: 844 });
+  await shot('09-phone-leaderboard', '#leaderboard');
+  console.log(log.length ? log.join('\n') : 'no page errors, no CSP violations');
+  await b.close();
+})().catch(e => { console.error('CHECK FAILED', e); process.exit(1); });

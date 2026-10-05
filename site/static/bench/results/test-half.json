@@ -1,0 +1,1109 @@
+{
+  "bench": "0.1",
+  "prompt": "b131db1ab5db",
+  "goal": "engine-goal-v1.704a96f0ed5f.bin.gz",
+  "provider": "mock",
+  "model": "test-half",
+  "label": "Baseline script: half",
+  "effort": "",
+  "started": "2026-10-05T10:36:15.845Z",
+  "ms": 1156.6044030000003,
+  "turns": 5,
+  "usage": {
+    "input": 0,
+    "output": 0,
+    "cacheRead": 0,
+    "cacheWrite": 0
+  },
+  "cost": 0,
+  "costSource": null,
+  "reason": "finished",
+  "score": {
+    "total": 58.62253956032211,
+    "silhouette": 0.6164430704980509,
+    "surface": 0.14700276279725888,
+    "dims": 0.7696592631026378,
+    "coverage": 0.6666666666666666,
+    "checks": [
+      {
+        "name": "Cylinders",
+        "value": "4",
+        "target": "4",
+        "score": 1
+      },
+      {
+        "name": "Bore",
+        "value": "75 mm",
+        "target": "75 mm",
+        "score": 0.9866668701171875
+      },
+      {
+        "name": "Bore spacing",
+        "value": "84 mm",
+        "target": "84 mm",
+        "score": 1
+      },
+      {
+        "name": "Crank height",
+        "value": "Z -212",
+        "target": "Z -212",
+        "score": 1
+      },
+      {
+        "name": "Valves",
+        "value": "8",
+        "target": "16",
+        "score": 0.5
+      },
+      {
+        "name": "Overall size",
+        "value": "477×248×524",
+        "target": "594×548×544",
+        "score": 0.13128870849863883
+      }
+    ],
+    "roles": 12
+  },
+  "parts": 35,
+  "calls": [
+    {
+      "ms": 0.507043000000067,
+      "name": "get_reference",
+      "input": {
+        "view": "iso"
+      },
+      "error": false
+    },
+    {
+      "ms": 0.5515959999997904,
+      "name": "add_parts",
+      "input": {
+        "parts": [
+          {
+            "id": "block",
+            "subsystem": "block",
+            "role": "block",
+            "shape": {
+              "type": "box",
+              "size": [
+                403,
+                221,
+                292
+              ]
+            },
+            "position": [
+              -3.5,
+              -0.5,
+              -146
+            ],
+            "cuts": [
+              {
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 37.5,
+                  "height": 200,
+                  "segments": 48
+                },
+                "position": [
+                  129.5,
+                  0.5,
+                  46
+                ]
+              },
+              {
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 37.5,
+                  "height": 200,
+                  "segments": 48
+                },
+                "position": [
+                  45.5,
+                  0.5,
+                  46
+                ]
+              },
+              {
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 37.5,
+                  "height": 200,
+                  "segments": 48
+                },
+                "position": [
+                  -38.5,
+                  0.5,
+                  46
+                ]
+              },
+              {
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 37.5,
+                  "height": 200,
+                  "segments": 48
+                },
+                "position": [
+                  -122.5,
+                  0.5,
+                  46
+                ]
+              }
+            ]
+          },
+          {
+            "id": "head",
+            "subsystem": "head",
+            "role": "head",
+            "shape": {
+              "type": "box",
+              "size": [
+                406,
+                187,
+                116
+              ]
+            },
+            "position": [
+              0,
+              7.5,
+              58.8
+            ]
+          },
+          {
+            "id": "valve_cover",
+            "subsystem": "head",
+            "role": "valve_cover",
+            "shape": {
+              "type": "box",
+              "size": [
+                394,
+                166,
+                53
+              ]
+            },
+            "position": [
+              0,
+              0,
+              120.5
+            ]
+          },
+          {
+            "id": "oil_pan",
+            "subsystem": "lubrication",
+            "role": "oil_pan",
+            "shape": {
+              "type": "extrude",
+              "points": [
+                [
+                  -194,
+                  -86
+                ],
+                [
+                  194,
+                  -86
+                ],
+                [
+                  194,
+                  86
+                ],
+                [
+                  -194,
+                  86
+                ]
+              ],
+              "height": 83
+            },
+            "position": [
+              0,
+              0,
+              -335
+            ]
+          }
+        ]
+      },
+      "error": false
+    },
+    {
+      "ms": 1004.7523780000001,
+      "name": "add_parts",
+      "input": {
+        "parts": [
+          {
+            "id": "crankshaft",
+            "subsystem": "crankshaft",
+            "role": "crankshaft",
+            "shape": {
+              "type": "cylinder",
+              "radius": 27.5,
+              "height": 465
+            },
+            "position": [
+              21.5,
+              0,
+              -212
+            ],
+            "rotation": [
+              0,
+              90,
+              0
+            ]
+          },
+          {
+            "id": "crank_web_1",
+            "subsystem": "crankshaft",
+            "shape": {
+              "type": "cylinder",
+              "radius": 70,
+              "height": 16
+            },
+            "position": [
+              106,
+              0,
+              -200
+            ],
+            "rotation": [
+              0,
+              90,
+              0
+            ]
+          },
+          {
+            "id": "crank_web_2",
+            "subsystem": "crankshaft",
+            "shape": {
+              "type": "cylinder",
+              "radius": 70,
+              "height": 16
+            },
+            "position": [
+              22,
+              0,
+              -224
+            ],
+            "rotation": [
+              0,
+              90,
+              0
+            ]
+          },
+          {
+            "id": "crank_web_3",
+            "subsystem": "crankshaft",
+            "shape": {
+              "type": "cylinder",
+              "radius": 70,
+              "height": 16
+            },
+            "position": [
+              -62,
+              0,
+              -224
+            ],
+            "rotation": [
+              0,
+              90,
+              0
+            ]
+          },
+          {
+            "id": "crank_web_4",
+            "subsystem": "crankshaft",
+            "shape": {
+              "type": "cylinder",
+              "radius": 70,
+              "height": 16
+            },
+            "position": [
+              -146,
+              0,
+              -200
+            ],
+            "rotation": [
+              0,
+              90,
+              0
+            ]
+          },
+          {
+            "id": "flywheel",
+            "subsystem": "crankshaft",
+            "role": "flywheel",
+            "shape": {
+              "type": "cylinder",
+              "radius": 124,
+              "height": 12,
+              "segments": 64
+            },
+            "position": [
+              -217,
+              0,
+              -212
+            ],
+            "rotation": [
+              0,
+              90,
+              0
+            ]
+          },
+          {
+            "id": "piston_1",
+            "subsystem": "pistons_rods",
+            "role": "piston",
+            "shape": {
+              "type": "cylinder",
+              "radius": 37.4,
+              "height": 60,
+              "segments": 48
+            },
+            "position": [
+              126,
+              0,
+              -30
+            ],
+            "cuts": [
+              {
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 10,
+                  "height": 80
+                },
+                "rotation": [
+                  0,
+                  90,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "id": "piston_2",
+            "subsystem": "pistons_rods",
+            "role": "piston",
+            "shape": {
+              "type": "cylinder",
+              "radius": 37.4,
+              "height": 60,
+              "segments": 48
+            },
+            "position": [
+              42,
+              0,
+              -120
+            ],
+            "cuts": [
+              {
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 10,
+                  "height": 80
+                },
+                "rotation": [
+                  0,
+                  90,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "id": "piston_3",
+            "subsystem": "pistons_rods",
+            "role": "piston",
+            "shape": {
+              "type": "cylinder",
+              "radius": 37.4,
+              "height": 60,
+              "segments": 48
+            },
+            "position": [
+              -42,
+              0,
+              -120
+            ],
+            "cuts": [
+              {
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 10,
+                  "height": 80
+                },
+                "rotation": [
+                  0,
+                  90,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "id": "piston_4",
+            "subsystem": "pistons_rods",
+            "role": "piston",
+            "shape": {
+              "type": "cylinder",
+              "radius": 37.4,
+              "height": 60,
+              "segments": 48
+            },
+            "position": [
+              -126,
+              0,
+              -30
+            ],
+            "cuts": [
+              {
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 10,
+                  "height": 80
+                },
+                "rotation": [
+                  0,
+                  90,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "id": "rod_1",
+            "subsystem": "pistons_rods",
+            "role": "connecting_rod",
+            "shape": {
+              "type": "box",
+              "size": [
+                23,
+                28,
+                137
+              ]
+            },
+            "position": [
+              126,
+              0,
+              -98.5
+            ]
+          },
+          {
+            "id": "rod_2",
+            "subsystem": "pistons_rods",
+            "role": "connecting_rod",
+            "shape": {
+              "type": "box",
+              "size": [
+                23,
+                28,
+                137
+              ]
+            },
+            "position": [
+              42,
+              0,
+              -188.5
+            ]
+          },
+          {
+            "id": "rod_3",
+            "subsystem": "pistons_rods",
+            "role": "connecting_rod",
+            "shape": {
+              "type": "box",
+              "size": [
+                23,
+                28,
+                137
+              ]
+            },
+            "position": [
+              -42,
+              0,
+              -188.5
+            ]
+          },
+          {
+            "id": "rod_4",
+            "subsystem": "pistons_rods",
+            "role": "connecting_rod",
+            "shape": {
+              "type": "box",
+              "size": [
+                23,
+                28,
+                137
+              ]
+            },
+            "position": [
+              -126,
+              0,
+              -98.5
+            ]
+          },
+          {
+            "id": "rod_big_end_1",
+            "subsystem": "pistons_rods",
+            "shape": {
+              "type": "tube",
+              "radius": 35,
+              "inner_radius": 22.5,
+              "height": 23
+            },
+            "rotation": [
+              0,
+              90,
+              0
+            ],
+            "position": [
+              126,
+              0,
+              -167
+            ]
+          },
+          {
+            "id": "rod_big_end_2",
+            "subsystem": "pistons_rods",
+            "shape": {
+              "type": "tube",
+              "radius": 35,
+              "inner_radius": 22.5,
+              "height": 23
+            },
+            "rotation": [
+              0,
+              90,
+              0
+            ],
+            "position": [
+              42,
+              0,
+              -257
+            ]
+          },
+          {
+            "id": "rod_big_end_3",
+            "subsystem": "pistons_rods",
+            "shape": {
+              "type": "tube",
+              "radius": 35,
+              "inner_radius": 22.5,
+              "height": 23
+            },
+            "rotation": [
+              0,
+              90,
+              0
+            ],
+            "position": [
+              -42,
+              0,
+              -257
+            ]
+          },
+          {
+            "id": "rod_big_end_4",
+            "subsystem": "pistons_rods",
+            "shape": {
+              "type": "tube",
+              "radius": 35,
+              "inner_radius": 22.5,
+              "height": 23
+            },
+            "rotation": [
+              0,
+              90,
+              0
+            ],
+            "position": [
+              -126,
+              0,
+              -167
+            ]
+          }
+        ]
+      },
+      "error": false
+    },
+    {
+      "ms": 1127.7863120000002,
+      "name": "render_view",
+      "input": {
+        "view": "exhaust_side",
+        "section": true
+      },
+      "error": false
+    },
+    {
+      "ms": 1127.8510539999997,
+      "name": "add_parts",
+      "input": {
+        "parts": [
+          {
+            "id": "camshaft",
+            "subsystem": "camshaft_timing",
+            "role": "camshaft",
+            "shape": {
+              "type": "cylinder",
+              "radius": 14,
+              "height": 403
+            },
+            "position": [
+              16.5,
+              12,
+              88
+            ],
+            "rotation": [
+              0,
+              90,
+              0
+            ]
+          },
+          {
+            "id": "intake_valve_1_1",
+            "subsystem": "valvetrain",
+            "role": "intake_valve",
+            "shape": {
+              "type": "revolve",
+              "points": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  15,
+                  0
+                ],
+                [
+                  15,
+                  2
+                ],
+                [
+                  3.5,
+                  10
+                ],
+                [
+                  3.5,
+                  112
+                ],
+                [
+                  0,
+                  112
+                ]
+              ],
+              "segments": 24
+            },
+            "position": [
+              110,
+              8,
+              3
+            ],
+            "rotation": [
+              -19,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "exhaust_valve_1_1",
+            "subsystem": "valvetrain",
+            "role": "exhaust_valve",
+            "shape": {
+              "type": "revolve",
+              "points": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  13,
+                  0
+                ],
+                [
+                  13,
+                  2
+                ],
+                [
+                  3.5,
+                  10
+                ],
+                [
+                  3.5,
+                  110
+                ],
+                [
+                  0,
+                  110
+                ]
+              ],
+              "segments": 24
+            },
+            "position": [
+              110,
+              -8,
+              3
+            ],
+            "rotation": [
+              19,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "intake_valve_1_2",
+            "subsystem": "valvetrain",
+            "role": "intake_valve",
+            "shape": {
+              "type": "revolve",
+              "points": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  15,
+                  0
+                ],
+                [
+                  15,
+                  2
+                ],
+                [
+                  3.5,
+                  10
+                ],
+                [
+                  3.5,
+                  112
+                ],
+                [
+                  0,
+                  112
+                ]
+              ],
+              "segments": 24
+            },
+            "position": [
+              142,
+              8,
+              3
+            ],
+            "rotation": [
+              -19,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "exhaust_valve_1_2",
+            "subsystem": "valvetrain",
+            "role": "exhaust_valve",
+            "shape": {
+              "type": "revolve",
+              "points": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  13,
+                  0
+                ],
+                [
+                  13,
+                  2
+                ],
+                [
+                  3.5,
+                  10
+                ],
+                [
+                  3.5,
+                  110
+                ],
+                [
+                  0,
+                  110
+                ]
+              ],
+              "segments": 24
+            },
+            "position": [
+              142,
+              -8,
+              3
+            ],
+            "rotation": [
+              19,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "intake_valve_2_1",
+            "subsystem": "valvetrain",
+            "role": "intake_valve",
+            "shape": {
+              "type": "revolve",
+              "points": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  15,
+                  0
+                ],
+                [
+                  15,
+                  2
+                ],
+                [
+                  3.5,
+                  10
+                ],
+                [
+                  3.5,
+                  112
+                ],
+                [
+                  0,
+                  112
+                ]
+              ],
+              "segments": 24
+            },
+            "position": [
+              26,
+              8,
+              3
+            ],
+            "rotation": [
+              -19,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "exhaust_valve_2_1",
+            "subsystem": "valvetrain",
+            "role": "exhaust_valve",
+            "shape": {
+              "type": "revolve",
+              "points": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  13,
+                  0
+                ],
+                [
+                  13,
+                  2
+                ],
+                [
+                  3.5,
+                  10
+                ],
+                [
+                  3.5,
+                  110
+                ],
+                [
+                  0,
+                  110
+                ]
+              ],
+              "segments": 24
+            },
+            "position": [
+              26,
+              -8,
+              3
+            ],
+            "rotation": [
+              19,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "intake_valve_2_2",
+            "subsystem": "valvetrain",
+            "role": "intake_valve",
+            "shape": {
+              "type": "revolve",
+              "points": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  15,
+                  0
+                ],
+                [
+                  15,
+                  2
+                ],
+                [
+                  3.5,
+                  10
+                ],
+                [
+                  3.5,
+                  112
+                ],
+                [
+                  0,
+                  112
+                ]
+              ],
+              "segments": 24
+            },
+            "position": [
+              58,
+              8,
+              3
+            ],
+            "rotation": [
+              -19,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "exhaust_valve_2_2",
+            "subsystem": "valvetrain",
+            "role": "exhaust_valve",
+            "shape": {
+              "type": "revolve",
+              "points": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  13,
+                  0
+                ],
+                [
+                  13,
+                  2
+                ],
+                [
+                  3.5,
+                  10
+                ],
+                [
+                  3.5,
+                  110
+                ],
+                [
+                  0,
+                  110
+                ]
+              ],
+              "segments": 24
+            },
+            "position": [
+              58,
+              -8,
+              3
+            ],
+            "rotation": [
+              19,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "spark_plug_1",
+            "subsystem": "ignition",
+            "role": "spark_plug",
+            "shape": {
+              "type": "cylinder",
+              "radius": 8,
+              "height": 64
+            },
+            "position": [
+              126,
+              -7.5,
+              41
+            ],
+            "rotation": [
+              18.4,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "spark_plug_2",
+            "subsystem": "ignition",
+            "role": "spark_plug",
+            "shape": {
+              "type": "cylinder",
+              "radius": 8,
+              "height": 64
+            },
+            "position": [
+              42,
+              -7.5,
+              41
+            ],
+            "rotation": [
+              18.4,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "spark_plug_3",
+            "subsystem": "ignition",
+            "role": "spark_plug",
+            "shape": {
+              "type": "cylinder",
+              "radius": 8,
+              "height": 64
+            },
+            "position": [
+              -42,
+              -7.5,
+              41
+            ],
+            "rotation": [
+              18.4,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "spark_plug_4",
+            "subsystem": "ignition",
+            "role": "spark_plug",
+            "shape": {
+              "type": "cylinder",
+              "radius": 8,
+              "height": 64
+            },
+            "position": [
+              -126,
+              -7.5,
+              41
+            ],
+            "rotation": [
+              18.4,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "error": false
+    },
+    {
+      "ms": 1156.5592969999998,
+      "name": "finish",
+      "input": {},
+      "error": false
+    }
+  ]
+}

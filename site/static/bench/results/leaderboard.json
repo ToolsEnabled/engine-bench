@@ -1,0 +1,53 @@
+[
+  {
+    "model": "test-full",
+    "label": "Baseline script: full spec",
+    "provider": "mock",
+    "score": 75.3,
+    "silhouette": 0.737,
+    "surface": 0.178,
+    "dims": 0.952,
+    "coverage": 1,
+    "parts": 53,
+    "ms": 2330.232265,
+    "cost": 0,
+    "tokens": 0,
+    "date": "2026-10-05T10:36:13.513Z",
+    "record": "/static/bench/results/test-full.json",
+    "kind": "baseline"
+  },
+  {
+    "model": "test-half",
+    "label": "Baseline script: half",
+    "provider": "mock",
+    "score": 58.6,
+    "silhouette": 0.616,
+    "surface": 0.147,
+    "dims": 0.77,
+    "coverage": 0.667,
+    "parts": 35,
+    "ms": 1156.6044030000003,
+    "cost": 0,
+    "tokens": 0,
+    "date": "2026-10-05T10:36:15.845Z",
+    "record": "/static/bench/results/test-half.json",
+    "kind": "baseline"
+  },
+  {
+    "model": "test-box",
+    "label": "Baseline: one bounding box",
+    "provider": "mock",
+    "score": 24.1,
+    "silhouette": 0.669,
+    "surface": 0.02,
+    "dims": 0.167,
+    "coverage": 0.056,
+    "parts": 1,
+    "ms": 1.1169780000000173,
+    "cost": 0,
+    "tokens": 0,
+    "date": "2026-10-05T10:36:17.004Z",
+    "record": "/static/bench/results/test-box.json",
+    "kind": "baseline"
+  }
+]

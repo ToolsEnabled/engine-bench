@@ -1,0 +1,103 @@
+{
+  "bench": "0.1",
+  "prompt": "b131db1ab5db",
+  "goal": "engine-goal-v1.704a96f0ed5f.bin.gz",
+  "provider": "mock",
+  "model": "test-box",
+  "label": "Baseline: one bounding box",
+  "effort": "",
+  "started": "2026-10-05T10:36:17.004Z",
+  "ms": 1.1169780000000173,
+  "turns": 2,
+  "usage": {
+    "input": 0,
+    "output": 0,
+    "cacheRead": 0,
+    "cacheWrite": 0
+  },
+  "cost": 0,
+  "costSource": null,
+  "reason": "finished",
+  "score": {
+    "total": 24.063274407331104,
+    "silhouette": 0.668765664160401,
+    "surface": 0.019984445763531637,
+    "dims": 0.16666665076969536,
+    "coverage": 0.05555555555555555,
+    "checks": [
+      {
+        "name": "Cylinders",
+        "value": "0",
+        "target": "4",
+        "score": 0
+      },
+      {
+        "name": "Bore",
+        "value": "none",
+        "target": "75 mm",
+        "score": 0
+      },
+      {
+        "name": "Bore spacing",
+        "value": "none",
+        "target": "84 mm",
+        "score": 0
+      },
+      {
+        "name": "Crank height",
+        "value": "none",
+        "target": "Z -212",
+        "score": 0
+      },
+      {
+        "name": "Valves",
+        "value": "0",
+        "target": "16",
+        "score": 0
+      },
+      {
+        "name": "Overall size",
+        "value": "594×548×544",
+        "target": "594×548×544",
+        "score": 0.9999999046181722
+      }
+    ],
+    "roles": 1
+  },
+  "parts": 1,
+  "calls": [
+    {
+      "ms": 0.45815700000002835,
+      "name": "add_parts",
+      "input": {
+        "parts": [
+          {
+            "id": "bounds_box",
+            "subsystem": "block",
+            "role": "block",
+            "shape": {
+              "type": "box",
+              "size": [
+                593.6,
+                547.7,
+                544.3
+              ]
+            },
+            "position": [
+              -29.19999999999999,
+              5.650000000000006,
+              -104.35
+            ]
+          }
+        ]
+      },
+      "error": false
+    },
+    {
+      "ms": 1.084100000000035,
+      "name": "finish",
+      "input": {},
+      "error": false
+    }
+  ]
+}

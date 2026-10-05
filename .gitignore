@@ -1,0 +1,5 @@
+node_modules/
+DEPLOY.md
+preview/
+.codex-runs/
+tools/goal-metrics.json

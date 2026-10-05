@@ -1,0 +1,28 @@
+name: Engine Bench run record
+description: Submit an unedited Engine Bench 0.1 race for verification.
+title: "Run record: "
+labels: [run-record]
+body:
+  - type: markdown
+    attributes:
+      value: Download the run records from the results section. Attach the JSON below. Do not include API keys or model conversations.
+  - type: textarea
+    id: record
+    attributes:
+      label: Run-record JSON
+      description: Attach the downloaded JSON file here. Drag it into this field or use the attachment button.
+      placeholder: Attach your run-record JSON.
+    validations:
+      required: true
+  - type: checkboxes
+    id: unchanged
+    attributes:
+      label: Unedited race
+      options:
+        - label: I confirm that the race and its run-record JSON were not edited.
+          required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Run notes
+      description: Optional browser, GPU, or provider notes. Leave out keys, model prose, and reasoning.
