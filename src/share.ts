@@ -15,7 +15,7 @@ export interface Side {
   history: Version[]; scores: [number, number][]; // [ms, total]
   spend: [number, number, number | null][]; // [ms, tokens, cost]
 }
-export interface Result { sides: Side[]; winner: 'A' | 'B' | null; fingerprint: string; ghost: THREE.Group; end: number }
+export interface Result { sides: Side[]; winner: 'A' | 'B' | null; voided?: boolean; fingerprint: string; ghost: THREE.Group; end: number }
 
 const RED = '#ef1d2f', INK = '#f7f4f3', MUTE = '#a3a3ab', DIM = '#6d6d75';
 const PROMPT_LINE = `Prompt: "${KICKOFF}" · one shot · no hand-holding`;
@@ -137,7 +137,7 @@ export function postText(r: Result): string {
 
 function headline(r: Result) {
   return r.sides.length === 1 ? `${r.sides[0].label}: ${r.sides[0].score.toFixed(1)}% match`
-    : r.winner ? `${r.sides.find(s => s.tag === r.winner)!.label} wins` : 'A dead heat';
+    : r.voided ? 'Race void' : r.winner ? `${r.sides.find(s => s.tag === r.winner)!.label} wins` : 'A dead heat';
 }
 
 export async function drawLeaderboard(canvas: HTMLCanvasElement, entries: Entry[], fingerprint: string) {

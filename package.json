@@ -5,7 +5,8 @@
   "scripts": {
     "goal": "node tools/build-goal.mjs",
     "check": "tsc --noEmit -p .",
-    "build": "node tools/build.mjs"
+    "build": "node tools/build.mjs",
+    "test": "node tools/check-records.mjs && node tools/check-agents.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",

@@ -8,7 +8,7 @@ import { score, type Score } from './score';
 import { systemPrompt } from './specs';
 import { TOOLS, LIMITS } from './tools';
 import { PROVIDERS, MOCK, type Provider, type ProviderInfo } from './providers';
-import { Run, REASONS, type AgentSpec, type Effort, type Price, type ToolOutcome } from './agents/common';
+import { Run, REASONS, failedToStart, type AgentSpec, type Effort, type Price, type ToolOutcome } from './agents/common';
 import { drawCard, drawGrid, drawLeaderboard, recordClip, postText, clock, money, type Result, type Side } from './share';
 import { BENCH_VERSION } from './version';
 import { fingerprint, record, readRecords, replay, type RunRecord, type RecordFile } from './records';
@@ -409,6 +409,7 @@ async function start() {
   ticker = window.setInterval(() => { lanes.forEach(stats); $('#clock').textContent = clock(performance.now() - t0); }, 250);
   await Promise.all(lanes.map(async l => {
     try { await drive(l); } catch (err) { l.run.finish('error', { error: (err as Error).message }); }
+    if (failedToStart({ reason: l.run.reason, turns: l.run.turn, calls: l.run.calls })) lanes.forEach(o => { if (o !== l) o.run.stop('void'); });
     const reason = REASONS[l.run.reason] ?? l.run.reason;
     $('.state', l.pane).textContent = reason;
     l.pane.dataset.state = l.run.reason === 'error' ? 'error' : 'done';
@@ -437,10 +438,11 @@ function results(file: RecordFile) {
       reason: REASONS[r.reason] ?? r.reason, history: l.ws.history, scores: l.scores, spend: l.spend } satisfies Side;
   });
   const [a, b] = sides, diff = b ? a.score - b.score : 0;
-  const winner = !b || Math.abs(diff) < .5 ? null : diff > 0 ? 'A' : 'B';
-  result = { sides, winner, fingerprint: print, ghost: studioGhost!, end: Math.max(...sides.map(s => s.ms)) };
+  const failed = b ? file.records.findIndex(failedToStart) : -1;
+  const winner = !b || failed >= 0 || Math.abs(diff) < .5 ? null : diff > 0 ? 'A' : 'B';
+  result = { sides, winner, voided: failed >= 0, fingerprint: print, ghost: studioGhost!, end: Math.max(...sides.map(s => s.ms)) };
   lanes.forEach(l => l.pane.classList.toggle('won', winner === l.tag));
-  $('#verdict').textContent = !b ? `${a.label}: ${a.score.toFixed(1)}% match.` : winner ? `${sides[winner === 'A' ? 0 : 1].label} wins, ${Math.round(Math.max(a.score, b.score))}% to ${Math.round(Math.min(a.score, b.score))}%.` : `A dead heat at ${Math.round(a.score)}%.`;
+  $('#verdict').textContent = !b ? `${a.label}: ${a.score.toFixed(1)}% match.` : failed >= 0 ? `Race void: ${sides[failed].label} failed on its first turn, so there is no winner.` : winner ? `${sides[winner === 'A' ? 0 : 1].label} wins, ${Math.round(Math.max(a.score, b.score))}% to ${Math.round(Math.min(a.score, b.score))}%.` : `A dead heat at ${Math.round(a.score)}%.`;
   const pct = (v: number) => `${Math.round(v * 100)}%`;
   const rows: [string, (l: Lane, s: Side, r: RunRecord) => string][] = [
     ['Match score', (l, s) => `${s.score.toFixed(1)}%`],

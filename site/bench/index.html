@@ -111,7 +111,7 @@
 
   <div class="limits">
     <label>Reasoning effort <select id="effort"><option value="" selected>Model default</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="xhigh">Extra high</option></select></label>
-    <p class="note">One prompt, then each agent works until it says it is done. Time, tokens and cost are measured, not capped. Effort is passed on where the provider supports it.</p>
+    <p class="note">One prompt, then each agent works until it says it is done. Time, tokens and cost are measured, not capped. Effort is sent only where this page can pass it on; each run record shows the effort actually sent.</p>
   </div>
 
   <div class="go">
@@ -130,7 +130,7 @@
     </div>
     <div class="panes">
       <article class="pane" data-agent="A">
-        <header><div class="who"><span class="tag">A</span><b class="model">Agent A</b><span class="prov"></span></div><span class="state">Waiting</span></header>
+        <header><div class="who"><span class="tag">A</span><b class="model">Agent A</b><span class="prov"></span></div><span class="state" role="status" aria-atomic="true">Waiting</span></header>
         <div class="view"><canvas></canvas>
           <div class="view-tools"><button type="button" data-ghost aria-pressed="true">Goal overlay</button><button type="button" data-fit>Reset view</button></div>
           <div class="match"><b>0</b><span>% match</span></div></div>
@@ -141,10 +141,10 @@
           <div><dt>Turns</dt><dd data-s="turns">0</dd></div>
           <div><dt>Parts</dt><dd data-s="parts">0</dd></div>
         </dl>
-        <ol class="feed" aria-live="polite" aria-label="What agent A is doing"></ol>
+        <ol class="feed" aria-label="What agent A is doing"></ol>
       </article>
       <article class="pane" data-agent="B">
-        <header><div class="who"><span class="tag">B</span><b class="model">Agent B</b><span class="prov"></span></div><span class="state">Waiting</span></header>
+        <header><div class="who"><span class="tag">B</span><b class="model">Agent B</b><span class="prov"></span></div><span class="state" role="status" aria-atomic="true">Waiting</span></header>
         <div class="view"><canvas></canvas>
           <div class="view-tools"><button type="button" data-ghost aria-pressed="true">Goal overlay</button><button type="button" data-fit>Reset view</button></div>
           <div class="match"><b>0</b><span>% match</span></div></div>
@@ -155,7 +155,7 @@
           <div><dt>Turns</dt><dd data-s="turns">0</dd></div>
           <div><dt>Parts</dt><dd data-s="parts">0</dd></div>
         </dl>
-        <ol class="feed" aria-live="polite" aria-label="What agent B is doing"></ol>
+        <ol class="feed" aria-label="What agent B is doing"></ol>
       </article>
     </div>
   </div>

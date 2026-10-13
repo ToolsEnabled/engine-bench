@@ -4,7 +4,7 @@
 // (reasoning details, thought signatures) survive from turn to turn.
 import { TOOLS } from '../tools';
 import type { ProviderInfo } from '../providers';
-import { KICKOFF, type Run } from './common';
+import { KICKOFF, MAX_OUT, TRUNCATED, type Run } from './common';
 
 type Msg = Record<string, unknown> & { role: string };
 interface ToolCall { id: string; type?: string; function: { name: string; arguments: string } }
@@ -58,17 +58,55 @@ export async function listChatModels(p: ProviderInfo, key: string): Promise<stri
 }
 
 const IMAGE_REFUSAL = /image|vision|multimodal|modalit/i;
+const LIMIT_REFUSAL = /max_(completion_)?tokens|maximum.*tokens|output.*limit|context (length|window)/i;
+
+// The same retry policy the Anthropic and OpenAI SDKs apply: up to four retries with exponential backoff
+// (honoring retry-after when the provider exposes it) for timeouts, conflicts, rate limits, server errors,
+// network failures and an error reported inside a 200 response. A retry is not a new turn.
+export const RETRY = { retries: 4, baseMs: 500, maxMs: 8000 };
+const retryable = (status: number) => status === 408 || status === 409 || status === 429 || status >= 500;
+
+function backoff(attempt: number, res?: Response): number {
+  const ms = Number(res?.headers.get('retry-after-ms'));
+  if (ms > 0 && ms <= 60_000) return ms;
+  const after = res?.headers.get('retry-after');
+  if (after) {
+    const s = Number(after), at = Date.parse(after) - Date.now();
+    if (after.trim() !== '' && s >= 0 && s <= 60) return s * 1000;
+    if (at > 0 && at <= 60_000) return at;
+  }
+  return Math.min(RETRY.maxMs, RETRY.baseMs * 2 ** attempt) * (1 - Math.random() * 0.25);
+}
+
+function wait(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((ok, no) => {
+    if (signal.aborted) return no(signal.reason);
+    const t = setTimeout(() => { signal.removeEventListener('abort', stop); ok(); }, ms);
+    const stop = () => { clearTimeout(t); no(signal.reason); };
+    signal.addEventListener('abort', stop, { once: true });
+  });
+}
+
+// An error a provider (OpenRouter, for one) reports inside an HTTP 200 body, with its status when it gives one.
+function bodyError(data: any): HttpError | null {
+  if (!data || typeof data !== 'object' || data.choices?.length || !data.error) return null;
+  const code = Number(data.error.code ?? data.error.status);
+  return new HttpError(Number.isInteger(code) && code >= 400 && code < 600 ? code : 502, String(data.error.message ?? 'The provider returned an error.').slice(0, 300));
+}
 
 export async function runChat(run: Run, p: ProviderInfo): Promise<void> {
   const tools = TOOLS.map(t => ({ type: 'function', function: { name: t.name, description: t.description, parameters: t.input_schema } }));
   const messages: Msg[] = [{ role: 'system', content: run.system }, { role: 'user', content: KICKOFF }];
   let vision = run.spec.vision !== false;
+  let capped = true; // send the shared output limit unless the provider refuses it
+  if (!(run.effort && p.effort)) run.effort = '';
+  else if (run.effort === 'xhigh') run.effort = 'high';
 
   const body = () => ({
     model: run.spec.model, messages, tools, tool_choice: 'auto',
-    ...(run.spec.maxOut ? { max_tokens: run.spec.maxOut } : {}),
-    ...(run.effort && p.effort === 'openrouter' ? { reasoning: { effort: run.effort === 'xhigh' ? 'high' : run.effort } } : {}),
-    ...(run.effort && p.effort === 'reasoning_effort' ? { reasoning_effort: run.effort === 'xhigh' ? 'high' : run.effort } : {}),
+    ...(capped ? { max_tokens: Math.min(MAX_OUT, run.spec.maxOut ?? MAX_OUT) } : {}),
+    ...(run.effort && p.effort === 'openrouter' ? { reasoning: { effort: run.effort } } : {}),
+    ...(run.effort && p.effort === 'reasoning_effort' ? { reasoning_effort: run.effort } : {}),
     ...(p.id === 'openrouter' ? { usage: { include: true } } : {}),
   });
 
@@ -77,23 +115,59 @@ export async function runChat(run: Run, p: ProviderInfo): Promise<void> {
     for (let i = messages.length - 1; i >= 0; i--) if (messages[i].images) messages.splice(i, 1);
   };
 
+  // A note from the page as a user message; joined to the last one if that is a user message too, since some
+  // providers refuse two user messages in a row.
+  const note = (text: string) => {
+    const last = messages[messages.length - 1];
+    if (last.role !== 'user') messages.push({ role: 'user', content: text });
+    else if (typeof last.content === 'string') last.content = `${last.content}\n\n${text}`;
+    else if (Array.isArray(last.content)) last.content.push({ type: 'text', text });
+  };
+
+  // One model call, retried like the SDKs retry theirs.
+  const request = async (): Promise<any> => {
+    for (let attempt = 0; ; attempt++) {
+      let res: Response | undefined, err: Error;
+      try {
+        res = await fetch(`${p.base}/chat/completions`, { method: 'POST', headers: headers(run.spec.key), body: JSON.stringify(body(), (k, v) => k === 'images' ? undefined : v), signal: run.signal });
+        if (res.ok) {
+          const data = await res.json();
+          const inBody = bodyError(data);
+          if (!inBody) return data;
+          err = inBody;
+        } else err = await failure(res);
+      } catch (e) {
+        if (run.signal.aborted || !(e instanceof TypeError)) throw e;
+        err = e; // the network failed
+      }
+      const status = err instanceof HttpError ? err.status : 0;
+      if ((status && !retryable(status)) || attempt >= RETRY.retries) throw err;
+      run.on.status('Retrying');
+      await wait(backoff(attempt, res), run.signal);
+    }
+  };
+
   try {
     for (;;) {
       const limit = run.limit();
       if (limit) return run.finish(limit);
       run.turn++;
       run.on.status('Thinking');
-      const res = await fetch(`${p.base}/chat/completions`, { method: 'POST', headers: headers(run.spec.key), body: JSON.stringify(body(), (k, v) => k === 'images' ? undefined : v), signal: run.signal });
-      if (!res.ok) {
-        const err = await failure(res);
-        if (err.status === 400 && vision && IMAGE_REFUSAL.test(err.message) && messages.some(m => m.images)) {
+      let data: any;
+      try { data = await request(); }
+      catch (err) {
+        if (err instanceof HttpError && err.status === 400 && vision && IMAGE_REFUSAL.test(err.message) && messages.some(m => m.images)) {
           vision = false; stripImages(); run.turn--;
           run.on.thought('This model cannot read images, so renders will be described in text only. ');
           continue;
         }
+        if (err instanceof HttpError && err.status === 400 && capped && LIMIT_REFUSAL.test(err.message)) {
+          capped = false; run.turn--;
+          run.on.thought(`This provider refused a ${MAX_OUT.toLocaleString('en-US')}-token limit per turn, so its own default applies. `);
+          continue;
+        }
         throw err;
       }
-      const data = await res.json();
       const u = data.usage ?? {};
       const cached = u.prompt_tokens_details?.cached_tokens ?? 0;
       run.add({ input: (u.prompt_tokens ?? 0) - cached, cacheRead: cached, output: u.completion_tokens ?? 0 }, u.cost);
@@ -108,9 +182,18 @@ export async function runChat(run: Run, p: ProviderInfo): Promise<void> {
 
       const kept: Msg = { role: 'assistant' };
       for (const [k, v] of Object.entries(msg)) if (v !== null && v !== undefined) kept[k] = v;
-      messages.push(kept);
       const calls = (msg.tool_calls as ToolCall[] | undefined) ?? [];
-      if (!calls.length) return run.finish('ended');
+      if (!calls.length) {
+        if (choice.finish_reason === 'content_filter') return run.finish('declined');
+        if (choice.finish_reason !== 'length') return run.finish('ended');
+        // Cut off by the output limit before any tool call: not an end. Say so and let the model go on.
+        if (!run.truncated()) return;
+        if (text) messages.push(kept);
+        note(TRUNCATED);
+        continue;
+      }
+      run.progressed();
+      messages.push(kept);
 
       const images: string[] = [];
       let finished: string | undefined;

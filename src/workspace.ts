@@ -12,6 +12,11 @@ export interface Version {
 }
 
 const ID = /^[a-z0-9_]{1,48}$/;
+// Lets the page breathe between parts. A message-channel task, unlike a chain of zero-delay timers, is not
+// slowed to one a minute when the tab is in the background.
+const breathe = () => typeof MessageChannel === 'function'
+  ? new Promise<void>(ok => { const c = new MessageChannel(); c.port1.onmessage = () => { c.port1.close(); ok(); }; c.port2.postMessage(null); })
+  : new Promise<void>(ok => setTimeout(ok, 0));
 const MAX_TRIS = 1_500_000;
 const fmt = (v: number) => Math.round(v).toString();
 export const boundsText = (b: THREE.Box3) => b.isEmpty() ? 'empty' :
@@ -71,7 +76,7 @@ export class Workspace {
         if (!(e instanceof SpecError)) throw e;
         errors.push(`part ${label}: ${e.message}`);
       }
-      if (i % 4 === 3) await new Promise(r => setTimeout(r, 0)); // keep the page responsive
+      if (i % 4 === 3) await breathe(); // keep the page responsive
     }
     if (added.length || replaced.length) this.changed++;
     const lines = [`Added ${added.length} part${added.length === 1 ? '' : 's'}${replaced.length ? `, replaced ${replaced.length}` : ''}.`];

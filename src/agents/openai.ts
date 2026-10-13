@@ -1,7 +1,7 @@
 // OpenAI agent loop: official SDK and the Responses API, called straight from the visitor's browser.
 import OpenAI from 'openai';
 import { TOOLS } from '../tools';
-import { KICKOFF, type Run } from './common';
+import { KICKOFF, MAX_OUT, TRUNCATED, type Run } from './common';
 
 // Reasoning models take the effort setting; older chat models reject it.
 const REASONING = /^(gpt-[5-9]|o\d|codex)/;
@@ -31,6 +31,8 @@ export async function runOpenAI(run: Run): Promise<void> {
     type: 'function', name: t.name, description: t.description, parameters: t.input_schema, strict: false,
   }));
   const reasoning = REASONING.test(run.spec.model);
+  if (!reasoning) run.effort = ''; // older chat models are sent no effort
+  let summary = true; // reasoning summaries, dropped if the organization may not receive them
   let input: OpenAI.Responses.ResponseInput = [{ role: 'user', content: KICKOFF }];
   let previous: string | undefined;
 
@@ -46,16 +48,25 @@ export async function runOpenAI(run: Run): Promise<void> {
         input,
         tools,
         previous_response_id: previous,
-        max_output_tokens: 32000,
+        max_output_tokens: MAX_OUT,
         parallel_tool_calls: true,
         store: true,
-        ...(reasoning ? { reasoning: { ...(run.effort ? { effort: run.effort } : {}), summary: 'auto' as const } } : {}),
+        ...(reasoning ? { reasoning: { ...(run.effort ? { effort: run.effort } : {}), ...(summary ? { summary: 'auto' as const } : {}) } } : {}),
       }, { signal: run.signal });
       stream.on('response.output_text.delta', e => { run.on.status('Writing'); run.on.text(e.delta); });
       stream.on('response.reasoning_summary_text.delta', e => run.on.thought(e.delta));
       stream.on('response.function_call_arguments.delta', () => run.on.status('Building'));
 
-      const resp = await stream.finalResponse();
+      let resp: OpenAI.Responses.Response;
+      try { resp = await stream.finalResponse(); }
+      catch (err) {
+        // Organizations that are not verified may not receive reasoning summaries: the same turn again without them.
+        if (summary && reasoning && err instanceof OpenAI.BadRequestError && /reasoning[._ ]summar/i.test(`${err.param ?? ''} ${err.message}`)) {
+          summary = false; run.turn--;
+          continue;
+        }
+        throw err;
+      }
       previous = resp.id;
       const u = resp.usage;
       if (u) {
@@ -66,7 +77,15 @@ export async function runOpenAI(run: Run): Promise<void> {
       if (refused) return run.finish('declined');
       const calls: { name: string; call_id: string; arguments: string }[] = [];
       for (const o of resp.output) if (o.type === 'function_call') calls.push(o);
-      if (!calls.length) return run.finish('ended');
+      if (!calls.length) {
+        if (resp.status !== 'incomplete') return run.finish('ended');
+        if (resp.incomplete_details?.reason === 'content_filter') return run.finish('declined');
+        // Cut off by the output limit before any tool call: not an end. Say so and let the model go on.
+        if (!run.truncated()) return;
+        input = [{ role: 'user', content: TRUNCATED }];
+        continue;
+      }
+      run.progressed();
 
       input = [];
       let finished: string | undefined;

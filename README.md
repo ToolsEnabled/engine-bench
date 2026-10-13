@@ -9,10 +9,10 @@ Read [METHOD.md](METHOD.md) for the rules, scoring formula, verification limits 
 ## How a race works
 
 1. You pick any two models from the 15 providers in [src/providers.ts](src/providers.ts) and paste your own API keys.
-2. Before the clock starts, the page checks each key with a free model lookup.
+2. Before the clock starts, the page checks each key with a free lookup where the provider answers one from a browser. If an agent still fails on its first turn, before any tool call, the race is void: the other agent is stopped and no winner is declared.
 3. Both agents start at the same moment. Each gets its own workspace and its own view on the page.
 4. Each agent works in turns. A turn is one model call, then its tool calls.
-5. The run ends when the agent calls `finish` or stops calling tools. There is no budget. Time, tokens and cost are measured, never capped. A safety stop at 150 turns or 90 minutes guards your key against a runaway loop.
+5. The run ends when the agent calls `finish` or stops calling tools. A turn cut off by the output limit before any tool call is not an end: the page says so and the agent goes on (three in a row end the run as "Cut off by the output limit"). Rate limits, timeouts and server errors are retried the same way for every provider. There is no budget. Time, tokens and cost are measured, never capped. A safety stop at 150 turns or 90 minutes guards your key against a runaway loop.
 6. The page scores both models against the goal. Download the run records, a share card, a model grid or a 15-second timelapse for X.
 
 Everything runs in your browser. Each key goes only from your browser to its own provider. The page's Content Security Policy allows connections only to the 15 provider APIs listed in [src/providers.ts](src/providers.ts). ToolsEnabled receives nothing from a run.
@@ -27,7 +27,8 @@ Everything runs in your browser. Each key goes only from your browser to its own
   - `render_view`
   - `get_reference`
   - `finish`
-- **No budget.** Each agent works until it is done. The optional reasoning effort is passed to both agents where the provider supports it.
+- **No budget.** Each agent works until it is done. The optional reasoning effort is sent only where the page can pass it on, and each run record stores the effort actually sent.
+- **Output limit.** 32,000 output tokens per turn for every provider, or the model's own lower limit when known.
 - **Pictures.** Every render is 800 × 600 from the same cameras, light and colours. Goal renders are made once and given to both agents.
 - **Scoring.** The same function scores both models ([src/score.ts](src/score.ts)).
 
